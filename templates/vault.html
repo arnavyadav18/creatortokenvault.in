@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Your Vault — Creator Token Vault{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="animate-fade-in">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
+            <div>
+                <h1 class="font-display text-3xl md:text-4xl font-bold text-white mb-2">Your Vault</h1>
+                <p class="text-slate-400 text-sm">Manage your tokens and unlock exclusive rewards</p>
+            </div>
+            <a href="{{ url_for('verify') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/20 transition-all" id="vault-verify-link">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                Submit New Verification
+            </a>
+        </div>
+
+        <!-- Token Balance Card -->
+        <div class="mb-10 animate-slide-up">
+            <div class="relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden animate-glow-pulse">
+                <!-- Decorative gradient -->
+                <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-purple-500/5 pointer-events-none"></div>
+
+                <div class="relative p-8 md:p-10">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <div>
+                            <p class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Token Balance</p>
+                            <div class="flex items-baseline gap-3">
+                                <span class="font-display text-6xl md:text-7xl font-extrabold gradient-text" id="vault-balance">
+                                    {{ current_user.token_balance }}
+                                </span>
+                                <span class="text-slate-500 text-lg font-medium">tokens</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">
+                                <span class="text-slate-500">Username:</span> <span class="text-white font-semibold">{{ current_user.username }}</span>
+                            </div>
+                            <div class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">
+                                <span class="text-slate-500">Email:</span> <span class="text-white font-semibold">{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reward Panels -->
+        <h2 class="font-display text-xl font-bold text-white mb-6">Redeem Rewards</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Chrome Extension Key Panel -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shine-hover transition-all duration-300 hover:border-emerald-500/30" id="reward-extension-key">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-2xl">
+                        🔑
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-white text-lg">Chrome Extension Key</h3>
+                        <div class="flex items-center gap-1.5 text-xs">
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold">100 tokens</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                    Generate a unique 16-character access key for the Creator Token Vault Chrome extension. One key per account.
+                </p>
+
+                {% if current_user.access_key %}
+                    <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 mb-4">
+                        <p class="text-xs text-emerald-400 font-medium uppercase tracking-wider mb-2">Your Extension Key</p>
+                        <code class="block text-emerald-300 font-mono text-lg font-bold tracking-widest" id="extension-key-value">{{ current_user.access_key }}</code>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-emerald-400">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        <span class="font-medium">Redeemed</span>
+                    </div>
+                {% else %}
+                    <form method="POST" action="{{ url_for('redeem_key') }}">
+                        <button type="submit" id="redeem-key-btn"
+                                class="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200
+                                {% if current_user.token_balance >= 100 %}
+                                    bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40
+                                {% else %}
+                                    bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700
+                                {% endif %}"
+                                {% if current_user.token_balance < 100 %}disabled{% endif %}>
+                            {% if current_user.token_balance >= 100 %}
+                                🔓 Redeem Extension Key (100 Tokens)
+                            {% else %}
+                                🔒 Need {{ 100 - current_user.token_balance }} more tokens
+                            {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <!-- Cinematic Asset Pack Panel -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shine-hover transition-all duration-300 hover:border-purple-500/30" id="reward-asset-pack">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-2xl">
+                        🎬
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-white text-lg">Cinematic Video Asset Pack</h3>
+                        <div class="flex items-center gap-1.5 text-xs">
+                            <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 font-semibold">50 tokens</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                    Unlock a curated collection of premium cinematic video assets, overlays, transitions, and LUTs for your creator workflow.
+                </p>
+
+                {% if current_user.unlocked_assets %}
+                    <div class="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 mb-4">
+                        <p class="text-xs text-purple-400 font-medium uppercase tracking-wider mb-1">Status</p>
+                        <p class="text-purple-300 font-semibold">Asset Pack Unlocked — Check your email for download link</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-purple-400">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        <span class="font-medium">Unlocked</span>
+                    </div>
+                {% else %}
+                    <form method="POST" action="{{ url_for('redeem_assets') }}">
+                        <button type="submit" id="redeem-assets-btn"
+                                class="w-full py-3 rounded-xl text-sm font-semibold transition-all duration-200
+                                {% if current_user.token_balance >= 50 %}
+                                    bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-400 hover:to-purple-500 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40
+                                {% else %}
+                                    bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700
+                                {% endif %}"
+                                {% if current_user.token_balance < 50 %}disabled{% endif %}>
+                            {% if current_user.token_balance >= 50 %}
+                                🔓 Unlock Asset Pack (50 Tokens)
+                            {% else %}
+                                🔒 Need {{ 50 - current_user.token_balance }} more tokens
+                            {% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Verifications -->
+        {% set user_verifications = current_user.verifications %}
+        {% if user_verifications %}
+        <div class="mt-10">
+            <h2 class="font-display text-xl font-bold text-white mb-4">Your Submissions</h2>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="vault-submissions-table">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-left">
+                                <th class="px-6 py-4 text-slate-400 font-medium">Tool</th>
+                                <th class="px-6 py-4 text-slate-400 font-medium">Order ID</th>
+                                <th class="px-6 py-4 text-slate-400 font-medium">Status</th>
+                                <th class="px-6 py-4 text-slate-400 font-medium">Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in user_verifications %}
+                            <tr class="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                                <td class="px-6 py-4 text-white font-medium">{{ v.tool.icon_emoji }} {{ v.tool.name }}</td>
+                                <td class="px-6 py-4 text-slate-300 font-mono text-xs">{{ v.order_id }}</td>
+                                <td class="px-6 py-4">
+                                    {% if v.status == 'approved' %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                            Approved
+                                        </span>
+                                    {% elif v.status == 'rejected' %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-semibold">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                                            Rejected
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-semibold">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-slate-500 text-xs">{{ v.submitted_at.strftime('%b %d, %Y %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
